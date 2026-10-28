@@ -84,6 +84,12 @@ a.tel{color:var(--link);text-decoration:none}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:9px 16px;border-radius:20px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
 .hidden{display:none!important}
+.bnd{background:var(--bg2);border-radius:12px;padding:10px;margin-bottom:8px}
+.bnd .cb{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.bnd .cb label{display:flex;align-items:center;gap:5px;background:var(--bg);border-radius:8px;padding:5px 8px;font-size:13px}
+.bnd .cb input{width:16px;height:16px;accent-color:var(--btn)}
+.bnd input[type=number]{background:var(--bg)}
+.sum.disc{color:var(--green);font-size:14px}
 </style>
 </head>
 <body>
@@ -115,6 +121,12 @@ a.tel{color:var(--link);text-decoration:none}
     <h3>Kitoblar va narxlar</h3>
     <div id="bookSet"></div>
     <button class="btn light sm" id="addBook">+ Kitob qo'shish</button>
+  </div>
+  <div class="sec">
+    <h3>To'plam narxlari</h3>
+    <p class="muted" style="margin-top:0">Belgilangan kitoblar birga olinsa, shu narx avtomatik qo'llanadi.</p>
+    <div id="bundleSet"></div>
+    <button class="btn light sm" id="addBundle">+ To'plam qo'shish</button>
   </div>
   <div class="sec">
     <h3>Standart oldindan to'lov</h3>
@@ -165,6 +177,7 @@ a.tel{color:var(--link);text-decoration:none}
       <h3>Kitoblar</h3>
       <div id="o_books"></div>
       <div class="f" style="margin-top:8px"><label>Chegirma (so'm)</label><input id="o_discount" type="number" inputmode="numeric" min="0" value="0"></div>
+      <div id="o_bundles"></div>
       <div class="sum big"><span>Jami:</span><span id="o_total">0 so'm</span></div>
     </div>
     <div class="sec">
@@ -235,7 +248,8 @@ const STATUS = {
   p2:{t:"Qoldiq kutilmoqda",c:"s-p2"},
   done:{t:"Yakunlangan",c:"s-done"}
 };
-let settings = { books:[{id:'b1',name:'1-kitob',price:0},{id:'b2',name:'2-kitob',price:0},{id:'b3',name:'3-kitob',price:0}], defPct:50 };
+let settings = { books:[{id:'b1',name:'1-kitob',price:0},{id:'b2',name:'2-kitob',price:0},{id:'b3',name:'3-kitob',price:0}], defPct:50,
+  bundles:[{books:['b1','b2'],price:89000},{books:['b1','b2','b3'],price:129000}] };
 let orders = [];
 let filter = 'all', query = '', period = 'all';
 let editing = null;   // tahrirlanayotgan buyurtma
@@ -379,10 +393,20 @@ function renderSettings(){
       <button class="btn light sm" data-bdel="${i}" style="height:42px">✕</button>
     </div>`).join('');
   $('defPct').value = settings.defPct;
+  if(!Array.isArray(settings.bundles)) settings.bundles=[];
+  $('bundleSet').innerHTML = settings.bundles.map((b,i)=>`
+    <div class="bnd">
+      <div class="cb">${settings.books.map(k=>`<label><input type="checkbox" data-bb="${i}" value="${k.id}" ${b.books.includes(k.id)?'checked':''}>${esc(k.name)}</label>`).join('')}</div>
+      <div class="row"><input data-bpr="${i}" type="number" inputmode="numeric" value="${b.price||''}" placeholder="To'plam narxi"><button class="btn light sm" data-bxdel="${i}" style="height:42px">✕</button></div>
+    </div>`).join('') || '<div class="muted" style="margin-bottom:8px">To\'plam yo\'q</div>';
 }
 function readSettingsForm(){
   document.querySelectorAll('[data-bn]').forEach(el=>settings.books[+el.dataset.bn].name = el.value.trim()||('Kitob '+(+el.dataset.bn+1)));
   document.querySelectorAll('[data-bp]').forEach(el=>settings.books[+el.dataset.bp].price = Math.max(0,+el.value||0));
+  (settings.bundles||[]).forEach((b,i)=>{
+    b.books=[...document.querySelectorAll(`[data-bb="${i}"]:checked`)].map(el=>el.value);
+    const pe=document.querySelector(`[data-bpr="${i}"]`); if(pe) b.price=Math.max(0,+pe.value||0);
+  });
 }
 
 /* ---------- Forma ---------- */
@@ -421,9 +445,27 @@ function renderFormBooks(){
     <div class="bk"><div class="t"><div style="font-weight:600">${esc(b.name)}</div><div class="muted">${money(b.price)}</div></div>
     <div class="step"><button data-q="${i}" data-d="-1">−</button><span>${b.qty}</span><button data-q="${i}" data-d="1">+</button></div></div>`).join('');
 }
+function bundleName(b){ return b.books.map(id=>{ const k=settings.books.find(x=>x.id===id); return k?k.name:'?'; }).join(' + '); }
+function bundleCalc(items){
+  const left={}, price={};
+  items.forEach(i=>{ left[i.id]=(left[i.id]||0)+i.qty; price[i.id]=i.price; });
+  let disc=0; const used=[];
+  const bs=(settings.bundles||[]).filter(b=>b.books&&b.books.length>1&&b.price>0).slice().sort((a,b)=>b.books.length-a.books.length);
+  for(const b of bs){
+    if(!b.books.every(id=>price[id]!=null)) continue;
+    const n=Math.min(...b.books.map(id=>left[id]||0)); if(n<=0) continue;
+    const normal=b.books.reduce((s,id)=>s+price[id],0), d=normal-b.price; if(d<=0) continue;
+    disc+=d*n; b.books.forEach(id=>left[id]-=n);
+    used.push({name:bundleName(b),n,price:b.price,d:d*n});
+  }
+  return {disc,used};
+}
 function calcTotal(){
   const sub = form.items.reduce((s,b)=>s+b.price*b.qty,0);
-  return Math.max(0, sub - Math.max(0,+$('o_discount').value||0));
+  const bc = bundleCalc(form.items);
+  form.bundleDisc = bc.disc;
+  $('o_bundles').innerHTML = bc.used.map(u=>`<div class="sum disc"><span>🎁 To'plam: ${esc(u.name)}${u.n>1?' × '+u.n:''} (${money(u.price)})</span><b>−${money(u.d)}</b></div>`).join('');
+  return Math.max(0, sub - bc.disc - Math.max(0,+$('o_discount').value||0));
 }
 function recalc(fromPct){
   const total = calcTotal();
@@ -451,7 +493,7 @@ async function submitForm(){
     name, phone, phone2:$('o_phone2').value.trim(),
     region:$('o_region').value, district:$('o_district').value.trim(), address:$('o_address').value.trim(), postIdx:$('o_postIdx').value.trim(),
     items: form.items.filter(b=>b.qty>0).map(b=>({id:b.id,name:b.name,price:b.price,qty:b.qty})),
-    discount: Math.max(0,+$('o_discount').value||0),
+    discount: Math.max(0,+$('o_discount').value||0), bundleDisc: form.bundleDisc||0,
     total: form.total, pct: form.pct, p1: form.p1,
     p1Paid:$('o_p1Paid').checked, shipped:$('o_shipped').checked, p2Paid:$('o_p2Paid').checked,
     track:$('o_track').value.trim(), note:$('o_note').value.trim()
@@ -518,7 +560,9 @@ $('addBook').onclick = ()=>{ readSettingsForm(); settings.books.push({id:'b'+Dat
 $('bookSet').onclick = async e=>{ const b=e.target.closest('[data-bdel]'); if(!b) return;
   if(settings.books.length<=1){ toast('Kamida bitta kitob qolishi kerak'); return; }
   if(!(await ask("Bu kitobni ro'yxatdan olib tashlaysizmi? (Eski buyurtmalarda saqlanib qoladi)"))) return;
-  readSettingsForm(); settings.books.splice(+b.dataset.bdel,1); renderSettings(); };
+  readSettingsForm(); const gone=settings.books.splice(+b.dataset.bdel,1)[0]; (settings.bundles||[]).forEach(x=>x.books=x.books.filter(id=>id!==gone.id)); renderSettings(); };
+$('addBundle').onclick = ()=>{ readSettingsForm(); settings.bundles.push({books:[],price:0}); renderSettings(); };
+$('bundleSet').onclick = e=>{ const b=e.target.closest('[data-bxdel]'); if(!b) return; readSettingsForm(); settings.bundles.splice(+b.dataset.bxdel,1); renderSettings(); };
 $('saveSet').onclick = async ()=>{
   readSettingsForm(); settings.defPct = Math.min(100,Math.max(0,+$('defPct').value||0));
   try{ await store.set('settings',JSON.stringify(settings)); haptic(); toast('Sozlamalar saqlandi'); renderSettings(); }catch(e){ toast('Saqlashda xato'); }
