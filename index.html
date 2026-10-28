@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Kitob buyurtmalari</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:var(--tg-theme-bg-color,#ffffff);
+  --bg2:var(--tg-theme-secondary-bg-color,#f1f2f6);
+  --tx:var(--tg-theme-text-color,#111111);
+  --hint:var(--tg-theme-hint-color,#8a8f98);
+  --link:var(--tg-theme-link-color,#2481cc);
+  --btn:var(--tg-theme-button-color,#2481cc);
+  --btntx:var(--tg-theme-button-text-color,#ffffff);
+  --red:#e5484d;--green:#2fa36b;--orange:#e8890c;--purple:#7c5cff;--blue:#2481cc;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font:15px/1.4 -apple-system,system-ui,Roboto,"Segoe UI",sans-serif;background:var(--bg2);color:var(--tx);padding-bottom:96px}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--bg2);border:1px solid transparent;border-radius:10px;padding:10px 12px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--btn)}
+textarea{resize:vertical;min-height:60px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 12px 0;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.tabs{display:flex;gap:4px}
+.tab{flex:1;border:0;background:none;color:var(--hint);padding:10px 4px;border-bottom:2px solid transparent;font-weight:600}
+.tab.on{color:var(--btn);border-color:var(--btn)}
+.wrap{padding:12px}
+.search{margin-bottom:10px;background:var(--bg)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:0;border-radius:16px;padding:6px 12px;background:var(--bg);color:var(--tx);font-size:13px;white-space:nowrap}
+.chip.on{background:var(--btn);color:var(--btntx)}
+.chip b{opacity:.7;font-weight:600;margin-left:4px}
+.card{background:var(--bg);border-radius:14px;padding:12px;margin-bottom:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.name{font-weight:700;font-size:16px}
+.muted{color:var(--hint);font-size:13px}
+.badge{font-size:12px;font-weight:600;padding:3px 8px;border-radius:8px;white-space:nowrap;color:#fff}
+.s-p1{background:var(--orange)}.s-ready{background:var(--blue)}.s-p2{background:var(--purple)}.s-done{background:var(--green)}
+.books{margin:8px 0;font-size:14px}
+.pay{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.payb{background:var(--bg2);border-radius:10px;padding:7px 9px;font-size:13px}
+.payb .v{font-weight:700;font-size:14px}
+.ok{color:var(--green)}.no{color:var(--red)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btn{border:0;border-radius:10px;padding:10px 12px;background:var(--btn);color:var(--btntx);font-weight:600}
+.btn.light{background:var(--bg2);color:var(--tx)}
+.btn.red{background:var(--red);color:#fff}
+.btn.sm{padding:7px 10px;font-size:13px}
+.btn.full{width:100%}
+a.tel{color:var(--link);text-decoration:none}
+.fab{position:fixed;right:16px;bottom:20px;z-index:6;border:0;border-radius:28px;padding:14px 20px;background:var(--btn);color:var(--btntx);font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.empty{text-align:center;color:var(--hint);padding:40px 10px}
+.sheet{position:fixed;inset:0;z-index:10;background:var(--bg2);overflow-y:auto;display:none}
+.sheet.on{display:block}
+.sheet-h{position:sticky;top:0;background:var(--bg);padding:12px;display:flex;align-items:center;gap:10px;z-index:2;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.sheet-h h2{margin:0;font-size:17px;flex:1}
+.sec{background:var(--bg);border-radius:14px;padding:12px;margin-bottom:10px}
+.sec h3{margin:0 0 10px;font-size:14px;color:var(--hint);text-transform:uppercase;letter-spacing:.03em}
+.f{margin-bottom:10px}
+.f label{display:block;font-size:13px;color:var(--hint);margin-bottom:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bk{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bg2)}
+.bk:last-child{border-bottom:0}
+.bk .t{flex:1}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:34px;height:34px;border-radius:10px;border:0;background:var(--bg2);color:var(--tx);font-size:18px;font-weight:700}
+.step span{min-width:22px;text-align:center;font-weight:700}
+.sum{display:flex;justify-content:space-between;padding:6px 0;font-size:15px}
+.sum.big{font-size:18px;font-weight:800}
+.pct{display:flex;gap:6px;margin-bottom:8px}
+.pct button{flex:1;border:0;border-radius:10px;padding:8px 0;background:var(--bg2);color:var(--tx);font-weight:600}
+.pct button.on{background:var(--btn);color:var(--btntx)}
+.chk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg2)}
+.chk:last-child{border-bottom:0}
+.chk input{width:22px;height:22px;flex:none;accent-color:var(--btn)}
+.chk .d{margin-left:auto;font-size:12px;color:var(--hint)}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.st{background:var(--bg);border-radius:14px;padding:12px}
+.st .v{font-size:18px;font-weight:800;margin-top:2px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:9px 16px;border-radius:20px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="tabs">
+    <button class="tab on" data-tab="orders">Buyurtmalar</button>
+    <button class="tab" data-tab="stats">Statistika</button>
+    <button class="tab" data-tab="settings">Sozlamalar</button>
+  </div>
+</div>
+
+<!-- BUYURTMALAR -->
+<div class="wrap" id="v-orders">
+  <input class="search" id="q" type="search" placeholder="🔍 Ism, telefon yoki manzil bo'yicha qidirish">
+  <div class="chips" id="filters"></div>
+  <div id="list"></div>
+</div>
+
+<!-- STATISTIKA -->
+<div class="wrap hidden" id="v-stats">
+  <div class="chips" id="periods"></div>
+  <div id="statsBox"></div>
+</div>
+
+<!-- SOZLAMALAR -->
+<div class="wrap hidden" id="v-settings">
+  <div class="sec">
+    <h3>Kitoblar va narxlar</h3>
+    <div id="bookSet"></div>
+    <button class="btn light sm" id="addBook">+ Kitob qo'shish</button>
+  </div>
+  <div class="sec">
+    <h3>Standart oldindan to'lov</h3>
+    <div class="f"><label>Foiz (%)</label><input type="number" id="defPct" min="0" max="100" inputmode="numeric"></div>
+  </div>
+  <button class="btn full" id="saveSet">Sozlamalarni saqlash</button>
+  <div class="sec" style="margin-top:10px">
+    <h3>Zaxira nusxa</h3>
+    <p class="muted" style="margin-top:0">Vaqti-vaqti bilan barcha ma'lumotni nusxalab, o'zingizga (masalan, "Saqlangan xabarlar"ga) yuborib qo'ying.</p>
+    <div class="acts">
+      <button class="btn light sm" id="expBtn">📋 Hammasini nusxalash</button>
+      <button class="btn light sm" id="impBtn">📥 Zaxiradan tiklash</button>
+    </div>
+    <textarea id="impTxt" class="hidden" placeholder="Zaxira matnini shu yerga qo'ying" style="margin-top:8px;min-height:120px"></textarea>
+    <button class="btn sm hidden" id="impGo" style="margin-top:8px">Tiklash</button>
+  </div>
+  <p class="muted" id="storeInfo" style="text-align:center"></p>
+</div>
+
+<button class="fab" id="fab">+ Yangi buyurtma</button>
+
+<!-- BUYURTMA FORMASI -->
+<div class="sheet" id="sheet">
+  <div class="sheet-h">
+    <button class="btn light sm" id="closeSheet">✕</button>
+    <h2 id="sheetTitle">Yangi buyurtma</h2>
+    <button class="btn sm" id="saveOrder">Saqlash</button>
+  </div>
+  <div class="wrap">
+    <div class="sec">
+      <h3>Mijoz</h3>
+      <div class="f"><label>Ism familiya *</label><input id="o_name" autocomplete="off"></div>
+      <div class="grid2">
+        <div class="f"><label>Telefon *</label><input id="o_phone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67"></div>
+        <div class="f"><label>Qo'shimcha telefon</label><input id="o_phone2" type="tel" inputmode="tel"></div>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Manzil</h3>
+      <div class="grid2">
+        <div class="f"><label>Viloyat</label><select id="o_region"></select></div>
+        <div class="f"><label>Tuman / shahar</label><input id="o_district"></div>
+      </div>
+      <div class="f"><label>To'liq manzil (ko'cha, uy, mo'ljal)</label><textarea id="o_address"></textarea></div>
+      <div class="f"><label>Pochta bo'limi / indeks</label><input id="o_postIdx"></div>
+    </div>
+    <div class="sec">
+      <h3>Kitoblar</h3>
+      <div id="o_books"></div>
+      <div class="f" style="margin-top:8px"><label>Chegirma (so'm)</label><input id="o_discount" type="number" inputmode="numeric" min="0" value="0"></div>
+      <div class="sum big"><span>Jami:</span><span id="o_total">0 so'm</span></div>
+    </div>
+    <div class="sec">
+      <h3>To'lov</h3>
+      <div class="pct" id="pctBtns"></div>
+      <div class="grid2">
+        <div class="f"><label>Oldindan to'lov (%)</label><input id="o_pct" type="number" inputmode="numeric" min="0" max="100"></div>
+        <div class="f"><label>1-to'lov summasi</label><input id="o_p1" type="number" inputmode="numeric" min="0"></div>
+      </div>
+      <div class="sum"><span>1-to'lov (pochtagacha):</span><b id="o_p1v">0</b></div>
+      <div class="sum"><span>2-to'lov (jo'natishda qoldiq):</span><b id="o_p2v">0</b></div>
+    </div>
+    <div class="sec">
+      <h3>Holat</h3>
+      <label class="chk"><input type="checkbox" id="o_p1Paid"> 1-to'lov qilindi <span class="d" id="d_p1"></span></label>
+      <label class="chk"><input type="checkbox" id="o_shipped"> Pochtadan jo'natildi <span class="d" id="d_ship"></span></label>
+      <label class="chk"><input type="checkbox" id="o_p2Paid"> Qoldiq (2-to'lov) qilindi <span class="d" id="d_p2"></span></label>
+      <div class="f" style="margin-top:10px"><label>Trek / pochta raqami</label><input id="o_track"></div>
+      <div class="f"><label>Izoh</label><textarea id="o_note"></textarea></div>
+    </div>
+    <div class="acts" id="editActs">
+      <button class="btn light" id="copyOrder">📋 Manzilni nusxalash</button>
+      <button class="btn red" id="delOrder">O'chirish</button>
+    </div>
+    <div style="height:30px"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+const hasCS = !!(tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('6.9'));
+
+/* ---------- Saqlash qatlami (Telegram CloudStorage, bo'lmasa localStorage) ---------- */
+const LS = 'kb_';
+function lsGet(k){ try { return localStorage.getItem(LS+k); } catch(e){ return null; } }
+function lsSet(k,v){ try { localStorage.setItem(LS+k,v); } catch(e){} }
+function lsDel(k){ try { localStorage.removeItem(LS+k); } catch(e){} }
+function lsKeys(){ try { return Object.keys(localStorage).filter(k=>k.startsWith(LS)).map(k=>k.slice(LS.length)); } catch(e){ return []; } }
+
+const store = {
+  keys(){ if(!hasCS) return Promise.resolve(lsKeys());
+    return new Promise((res,rej)=>tg.CloudStorage.getKeys((e,k)=>e?rej(e):res(k||[]))); },
+  async getMany(keys){
+    const out = {};
+    if(!keys.length) return out;
+    if(!hasCS){ keys.forEach(k=>out[k]=lsGet(k)); return out; }
+    for(let i=0;i<keys.length;i+=50){
+      const part = keys.slice(i,i+50);
+      const v = await new Promise((res,rej)=>tg.CloudStorage.getItems(part,(e,r)=>e?rej(e):res(r||{})));
+      Object.assign(out,v);
+    }
+    return out;
+  },
+  set(k,v){ if(!hasCS){ lsSet(k,v); return Promise.resolve(); }
+    return new Promise((res,rej)=>tg.CloudStorage.setItem(k,v,(e)=>e?rej(e):res())); },
+  del(k){ if(!hasCS){ lsDel(k); return Promise.resolve(); }
+    return new Promise((res,rej)=>tg.CloudStorage.removeItem(k,(e)=>e?rej(e):res())); }
+};
+
+/* ---------- Holat ---------- */
+const REGIONS = ["Toshkent shahri","Toshkent viloyati","Andijon","Buxoro","Farg'ona","Jizzax","Xorazm","Namangan","Navoiy","Qashqadaryo","Qoraqalpog'iston","Samarqand","Sirdaryo","Surxondaryo"];
+const STATUS = {
+  p1:{t:"1-to'lov kutilmoqda",c:"s-p1"},
+  ready:{t:"Jo'natishga tayyor",c:"s-ready"},
+  p2:{t:"Qoldiq kutilmoqda",c:"s-p2"},
+  done:{t:"Yakunlangan",c:"s-done"}
+};
+let settings = { books:[{id:'b1',name:'1-kitob',price:0},{id:'b2',name:'2-kitob',price:0},{id:'b3',name:'3-kitob',price:0}], defPct:50 };
+let orders = [];
+let filter = 'all', query = '', period = 'all';
+let editing = null;   // tahrirlanayotgan buyurtma
+let form = {};        // forma holati
+
+/* ---------- Yordamchilar ---------- */
+const $ = id => document.getElementById(id);
+const money = n => (Math.round(+n||0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ') + " so'm";
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = ts => { if(!ts) return ''; const d=new Date(ts); return d.toLocaleDateString('ru-RU')+' '+d.toTimeString().slice(0,5); };
+const telHref = p => 'tel:'+String(p||'').replace(/[^\d+]/g,'');
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1800); }
+function haptic(type){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred(type||'success'); }catch(e){} }
+function ask(msg){ return new Promise(res=>{ if(tg && tg.showConfirm){ try{ tg.showConfirm(msg,ok=>res(!!ok)); return; }catch(e){} } res(confirm(msg)); }); }
+async function copyText(txt){
+  try{ await navigator.clipboard.writeText(txt); toast('Nusxalandi'); return; }catch(e){}
+  const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); toast('Nusxalandi'); }catch(e){ toast("Nusxalab bo'lmadi"); }
+  ta.remove();
+}
+const remain = o => Math.max(0,(o.total||0)-(o.p1||0));
+function status(o){
+  if(!o.p1Paid && (o.p1||0)>0) return 'p1';
+  if(!o.shipped) return 'ready';
+  if(!o.p2Paid && remain(o)>0) return 'p2';
+  return 'done';
+}
+function paidSum(o){ return (o.p1Paid?(o.p1||0):0) + (o.p2Paid?remain(o):0); }
+
+/* ---------- Yuklash ---------- */
+async function load(){
+  try{
+    const keys = await store.keys();
+    const want = keys.filter(k=>k==='settings'||k.startsWith('o_'));
+    const vals = await store.getMany(want);
+    if(vals.settings){ try{ settings = Object.assign(settings, JSON.parse(vals.settings)); }catch(e){} }
+    orders = want.filter(k=>k.startsWith('o_')).map(k=>{ try{ return JSON.parse(vals[k]); }catch(e){ return null; } }).filter(Boolean);
+  }catch(e){ toast("Ma'lumotni yuklashda xato"); }
+  $('storeInfo').textContent = hasCS ? "☁️ Ma'lumotlar Telegram bulutida saqlanmoqda" : "⚠️ Telegramdan tashqarida ochilgan: ma'lumot faqat shu brauzerda saqlanadi";
+  renderAll();
+}
+async function saveOrderObj(o){ await store.set('o_'+o.id, JSON.stringify(o)); }
+
+/* ---------- Ro'yxat ---------- */
+function renderFilters(){
+  const counts = {all:orders.length,p1:0,ready:0,p2:0,done:0};
+  orders.forEach(o=>counts[status(o)]++);
+  const items = [['all','Hammasi'],['p1',STATUS.p1.t],['ready',STATUS.ready.t],['p2',STATUS.p2.t],['done',STATUS.done.t]];
+  $('filters').innerHTML = items.map(([k,t])=>`<button class="chip ${filter===k?'on':''}" data-f="${k}">${t}<b>${counts[k]}</b></button>`).join('');
+}
+function renderList(){
+  const q = query.trim().toLowerCase();
+  const qd = q.replace(/\D/g,'');
+  let list = orders.slice().sort((a,b)=>b.created-a.created);
+  if(filter!=='all') list = list.filter(o=>status(o)===filter);
+  if(q) list = list.filter(o=>{
+    const hay = [o.name,o.region,o.district,o.address,o.track,o.note].join(' ').toLowerCase();
+    const ph = (String(o.phone||'')+' '+String(o.phone2||'')).replace(/\D/g,'');
+    return hay.includes(q) || (qd.length>=3 && ph.includes(qd));
+  });
+  if(!list.length){ $('list').innerHTML = `<div class="empty">${orders.length?'Hech narsa topilmadi':'Hali buyurtma yo\'q.<br>Pastdagi “+ Yangi buyurtma” tugmasini bosing.'}</div>`; return; }
+  $('list').innerHTML = list.map(o=>{
+    const s = status(o), r = remain(o);
+    const books = (o.items||[]).filter(i=>i.qty>0).map(i=>`📘 ${esc(i.name)} × ${i.qty}`).join('<br>');
+    const addr = [o.region,o.district,o.address].filter(Boolean).map(esc).join(', ');
+    let acts = '';
+    if(s==='p1') acts = `<button class="btn sm" data-act="p1" data-id="${o.id}">✓ 1-to'lov olindi</button>`;
+    if(s==='ready') acts = `<button class="btn sm" data-act="ship" data-id="${o.id}">📦 Jo'natildi</button>` + (r>0?`<button class="btn sm light" data-act="shipPaid" data-id="${o.id}">📦 Jo'natildi + qoldiq olindi</button>`:'');
+    if(s==='p2') acts = `<button class="btn sm" data-act="p2" data-id="${o.id}">✓ Qoldiq olindi</button>`;
+    return `<div class="card" data-open="${o.id}">
+      <div class="row"><div class="name">${esc(o.name)}</div><span class="badge ${STATUS[s].c}">${STATUS[s].t}</span></div>
+      <div class="muted"><a class="tel" href="${telHref(o.phone)}">📞 ${esc(o.phone)}</a>${o.phone2?` · <a class="tel" href="${telHref(o.phone2)}">${esc(o.phone2)}</a>`:''}</div>
+      ${addr?`<div class="muted">📍 ${addr}</div>`:''}
+      <div class="books">${books||'<span class="muted">Kitob tanlanmagan</span>'}</div>
+      <div class="pay">
+        <div class="payb">1-to'lov (${o.pct||0}%)<div class="v ${o.p1Paid?'ok':'no'}">${o.p1Paid?'✓':'✗'} ${money(o.p1)}</div></div>
+        <div class="payb">Qoldiq<div class="v ${(o.p2Paid||r===0)?'ok':'no'}">${(o.p2Paid||r===0)?'✓':'✗'} ${money(r)}</div></div>
+      </div>
+      <div class="row"><span class="muted">Jami: <b style="color:var(--tx)">${money(o.total)}</b></span><span class="muted">${fmtDate(o.created)}</span></div>
+      ${acts?`<div class="acts">${acts}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function quickAction(id,act){
+  const o = orders.find(x=>x.id===id); if(!o) return;
+  const now = Date.now();
+  if(act==='p1'){ o.p1Paid=true; o.p1Date=now; }
+  if(act==='ship'){ o.shipped=true; o.shipDate=now; }
+  if(act==='shipPaid'){ o.shipped=true; o.shipDate=now; o.p2Paid=true; o.p2Date=now; }
+  if(act==='p2'){ o.p2Paid=true; o.p2Date=now; }
+  try{ await saveOrderObj(o); haptic(); toast('Saqlandi'); }catch(e){ toast('Saqlashda xato'); }
+  renderAll();
+}
+
+/* ---------- Statistika ---------- */
+function renderStats(){
+  const ps = [['all','Hammasi'],['month','Bu oy'],['week','Oxirgi 7 kun'],['today','Bugun']];
+  $('periods').innerHTML = ps.map(([k,t])=>`<button class="chip ${period===k?'on':''}" data-p="${k}">${t}</button>`).join('');
+  const now = new Date();
+  let from = 0;
+  if(period==='today') from = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  if(period==='week') from = Date.now()-7*864e5;
+  if(period==='month') from = new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const list = orders.filter(o=>o.created>=from);
+  let total=0, got=0, wait1=0, wait2=0;
+  const perBook = {}, cnt={p1:0,ready:0,p2:0,done:0};
+  list.forEach(o=>{
+    total += o.total||0; got += paidSum(o);
+    if(!o.p1Paid) wait1 += o.p1||0;
+    if(!o.p2Paid) wait2 += remain(o);
+    cnt[status(o)]++;
+    (o.items||[]).forEach(i=>{ if(i.qty>0){ perBook[i.name]=(perBook[i.name]||0)+i.qty; } });
+  });
+  const booksHtml = Object.keys(perBook).length
+    ? Object.entries(perBook).sort((a,b)=>b[1]-a[1]).map(([n,q])=>`<div class="sum"><span>📘 ${esc(n)}</span><b>${q} dona</b></div>`).join('')
+    : '<div class="muted">Hali sotuv yo\'q</div>';
+  $('statsBox').innerHTML = `
+    <div class="stat">
+      <div class="st"><div class="muted">Buyurtmalar</div><div class="v">${list.length}</div></div>
+      <div class="st"><div class="muted">Umumiy savdo</div><div class="v">${money(total)}</div></div>
+      <div class="st"><div class="muted">Qo'lga tushgan</div><div class="v ok">${money(got)}</div></div>
+      <div class="st"><div class="muted">Kutilayotgan</div><div class="v no">${money(total-got)}</div></div>
+    </div>
+    <div class="sec"><h3>Kutilayotgan to'lovlar</h3>
+      <div class="sum"><span>1-to'lovlar</span><b>${money(wait1)}</b></div>
+      <div class="sum"><span>Qoldiqlar (2-to'lov)</span><b>${money(wait2)}</b></div>
+    </div>
+    <div class="sec"><h3>Holatlar</h3>
+      ${Object.keys(cnt).map(k=>`<div class="sum"><span><span class="badge ${STATUS[k].c}">${STATUS[k].t}</span></span><b>${cnt[k]}</b></div>`).join('')}
+    </div>
+    <div class="sec"><h3>Sotilgan kitoblar</h3>${booksHtml}</div>`;
+}
+
+/* ---------- Sozlamalar ---------- */
+function renderSettings(){
+  $('bookSet').innerHTML = settings.books.map((b,i)=>`
+    <div class="grid2" style="margin-bottom:8px;grid-template-columns:1.6fr 1fr auto;align-items:end">
+      <div><label class="muted">Kitob nomi</label><input data-bn="${i}" value="${esc(b.name)}"></div>
+      <div><label class="muted">Narxi</label><input data-bp="${i}" type="number" inputmode="numeric" value="${b.price||''}" placeholder="0"></div>
+      <button class="btn light sm" data-bdel="${i}" style="height:42px">✕</button>
+    </div>`).join('');
+  $('defPct').value = settings.defPct;
+}
+function readSettingsForm(){
+  document.querySelectorAll('[data-bn]').forEach(el=>settings.books[+el.dataset.bn].name = el.value.trim()||('Kitob '+(+el.dataset.bn+1)));
+  document.querySelectorAll('[data-bp]').forEach(el=>settings.books[+el.dataset.bp].price = Math.max(0,+el.value||0));
+}
+
+/* ---------- Forma ---------- */
+function openForm(o){
+  editing = o || null;
+  const src = o || {};
+  form = {
+    items: settings.books.map(b=>{
+      const ex = (src.items||[]).find(i=>i.id===b.id);
+      return {id:b.id, name:b.name, price: ex?ex.price:b.price, qty: ex?ex.qty:0};
+    }),
+    pct: o ? (o.pct??settings.defPct) : settings.defPct,
+    p1Manual: o ? o.p1 : null
+  };
+  // eski buyurtmadagi, sozlamalardan o'chirilgan kitoblar
+  (src.items||[]).forEach(i=>{ if(!form.items.find(x=>x.id===i.id)) form.items.push({...i}); });
+  $('sheetTitle').textContent = o ? 'Buyurtmani tahrirlash' : 'Yangi buyurtma';
+  $('o_name').value = src.name||''; $('o_phone').value = src.phone||'+998 '; $('o_phone2').value = src.phone2||'';
+  $('o_region').innerHTML = '<option value="">— tanlang —</option>' + REGIONS.map(r=>`<option ${src.region===r?'selected':''}>${r}</option>`).join('');
+  $('o_district').value = src.district||''; $('o_address').value = src.address||''; $('o_postIdx').value = src.postIdx||'';
+  $('o_discount').value = src.discount||0;
+  $('o_p1Paid').checked = !!src.p1Paid; $('o_shipped').checked = !!src.shipped; $('o_p2Paid').checked = !!src.p2Paid;
+  $('d_p1').textContent = fmtDate(src.p1Date); $('d_ship').textContent = fmtDate(src.shipDate); $('d_p2').textContent = fmtDate(src.p2Date);
+  $('o_track').value = src.track||''; $('o_note').value = src.note||'';
+  $('editActs').classList.toggle('hidden', !o);
+  renderFormBooks(); recalc(true);
+  $('sheet').classList.add('on'); $('sheet').scrollTop = 0; document.body.style.overflow='hidden';
+  if(tg && tg.BackButton){ try{ tg.BackButton.show(); }catch(e){} }
+}
+function closeForm(){
+  $('sheet').classList.remove('on'); document.body.style.overflow='';
+  if(tg && tg.BackButton){ try{ tg.BackButton.hide(); }catch(e){} }
+}
+function renderFormBooks(){
+  $('o_books').innerHTML = form.items.map((b,i)=>`
+    <div class="bk"><div class="t"><div style="font-weight:600">${esc(b.name)}</div><div class="muted">${money(b.price)}</div></div>
+    <div class="step"><button data-q="${i}" data-d="-1">−</button><span>${b.qty}</span><button data-q="${i}" data-d="1">+</button></div></div>`).join('');
+}
+function calcTotal(){
+  const sub = form.items.reduce((s,b)=>s+b.price*b.qty,0);
+  return Math.max(0, sub - Math.max(0,+$('o_discount').value||0));
+}
+function recalc(fromPct){
+  const total = calcTotal();
+  let pct = Math.min(100,Math.max(0,+form.pct||0));
+  let p1;
+  if(fromPct || form.p1Manual==null){ p1 = Math.round(total*pct/100); form.p1Manual=null; }
+  else { p1 = Math.min(total, Math.max(0,+form.p1Manual||0)); pct = total? Math.round(p1/total*100) : pct; }
+  form.pct = pct; form.p1 = p1; form.total = total;
+  $('o_total').textContent = money(total);
+  if(document.activeElement!==$('o_pct')) $('o_pct').value = pct;
+  if(document.activeElement!==$('o_p1')) $('o_p1').value = p1;
+  $('o_p1v').textContent = money(p1); $('o_p2v').textContent = money(total-p1);
+  $('pctBtns').innerHTML = [30,50,70,100].map(v=>`<button data-pct="${v}" class="${pct===v?'on':''}">${v}%</button>`).join('');
+}
+async function submitForm(){
+  const name = $('o_name').value.trim(), phone = $('o_phone').value.trim();
+  if(!name){ toast('Mijoz ismini kiriting'); $('o_name').focus(); return; }
+  if(phone.replace(/\D/g,'').length<7){ toast('Telefon raqamini kiriting'); $('o_phone').focus(); return; }
+  if(!form.items.some(b=>b.qty>0)){ toast('Kamida bitta kitob tanlang'); return; }
+  recalc(false);
+  const now = Date.now(), old = editing||{};
+  const o = {
+    id: old.id || (now.toString(36)+Math.random().toString(36).slice(2,5)),
+    created: old.created || now,
+    name, phone, phone2:$('o_phone2').value.trim(),
+    region:$('o_region').value, district:$('o_district').value.trim(), address:$('o_address').value.trim(), postIdx:$('o_postIdx').value.trim(),
+    items: form.items.filter(b=>b.qty>0).map(b=>({id:b.id,name:b.name,price:b.price,qty:b.qty})),
+    discount: Math.max(0,+$('o_discount').value||0),
+    total: form.total, pct: form.pct, p1: form.p1,
+    p1Paid:$('o_p1Paid').checked, shipped:$('o_shipped').checked, p2Paid:$('o_p2Paid').checked,
+    track:$('o_track').value.trim(), note:$('o_note').value.trim()
+  };
+  o.p1Date = o.p1Paid ? (old.p1Date||now) : null;
+  o.shipDate = o.shipped ? (old.shipDate||now) : null;
+  o.p2Date = o.p2Paid ? (old.p2Date||now) : null;
+  try{
+    await saveOrderObj(o);
+    const i = orders.findIndex(x=>x.id===o.id);
+    if(i>=0) orders[i]=o; else orders.push(o);
+    haptic(); toast('Saqlandi'); closeForm(); renderAll();
+  }catch(e){ toast('Saqlashda xato: '+(e&&e.message||e)); }
+}
+function orderText(o){
+  return [
+    `👤 ${o.name}`,
+    `📞 ${o.phone}${o.phone2?', '+o.phone2:''}`,
+    `📍 ${[o.region,o.district,o.address].filter(Boolean).join(', ')}`,
+    o.postIdx?`🏤 ${o.postIdx}`:'',
+    `📚 ${(o.items||[]).map(i=>i.name+' × '+i.qty).join(', ')}`,
+    `💰 Jami: ${money(o.total)} | 1-to'lov: ${money(o.p1)} | Qoldiq: ${money(remain(o))}`
+  ].filter(Boolean).join('\n');
+}
+
+/* ---------- Umumiy render ---------- */
+function renderAll(){ renderFilters(); renderList(); renderStats(); renderSettings(); }
+
+/* ---------- Hodisalar ---------- */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+  ['orders','stats','settings'].forEach(v=>$('v-'+v).classList.toggle('hidden',v!==t.dataset.tab));
+  $('fab').classList.toggle('hidden',t.dataset.tab!=='orders');
+  window.scrollTo(0,0);
+});
+$('q').oninput = e=>{ query=e.target.value; renderList(); };
+$('filters').onclick = e=>{ const b=e.target.closest('[data-f]'); if(b){ filter=b.dataset.f; renderFilters(); renderList(); } };
+$('periods').onclick = e=>{ const b=e.target.closest('[data-p]'); if(b){ period=b.dataset.p; renderStats(); } };
+$('list').onclick = e=>{
+  if(e.target.closest('a')) return;
+  const a = e.target.closest('[data-act]');
+  if(a){ e.stopPropagation(); quickAction(a.dataset.id,a.dataset.act); return; }
+  const c = e.target.closest('[data-open]');
+  if(c) openForm(orders.find(o=>o.id===c.dataset.open));
+};
+$('fab').onclick = ()=>openForm(null);
+$('closeSheet').onclick = closeForm;
+if(tg && tg.BackButton){ try{ tg.BackButton.onClick(closeForm); }catch(e){} }
+$('saveOrder').onclick = submitForm;
+$('o_books').onclick = e=>{ const b=e.target.closest('[data-q]'); if(!b) return;
+  const it=form.items[+b.dataset.q]; it.qty=Math.max(0,it.qty+(+b.dataset.d)); renderFormBooks(); recalc(form.p1Manual==null); };
+$('o_discount').oninput = ()=>recalc(form.p1Manual==null);
+$('o_pct').oninput = e=>{ form.pct=+e.target.value||0; recalc(true); };
+$('o_p1').oninput = e=>{ form.p1Manual=+e.target.value||0; recalc(false); };
+$('pctBtns').onclick = e=>{ const b=e.target.closest('[data-pct]'); if(b){ form.pct=+b.dataset.pct; recalc(true); } };
+$('copyOrder').onclick = ()=>{ if(editing) copyText(orderText(editing)); };
+$('delOrder').onclick = async ()=>{
+  if(!editing) return;
+  if(!(await ask(`“${editing.name}” buyurtmasini o'chirasizmi?`))) return;
+  try{ await store.del('o_'+editing.id); orders=orders.filter(o=>o.id!==editing.id); toast("O'chirildi"); closeForm(); renderAll(); }
+  catch(e){ toast("O'chirishda xato"); }
+};
+$('addBook').onclick = ()=>{ readSettingsForm(); settings.books.push({id:'b'+Date.now().toString(36),name:'Yangi kitob',price:0}); renderSettings(); };
+$('bookSet').onclick = async e=>{ const b=e.target.closest('[data-bdel]'); if(!b) return;
+  if(settings.books.length<=1){ toast('Kamida bitta kitob qolishi kerak'); return; }
+  if(!(await ask("Bu kitobni ro'yxatdan olib tashlaysizmi? (Eski buyurtmalarda saqlanib qoladi)"))) return;
+  readSettingsForm(); settings.books.splice(+b.dataset.bdel,1); renderSettings(); };
+$('saveSet').onclick = async ()=>{
+  readSettingsForm(); settings.defPct = Math.min(100,Math.max(0,+$('defPct').value||0));
+  try{ await store.set('settings',JSON.stringify(settings)); haptic(); toast('Sozlamalar saqlandi'); renderSettings(); }catch(e){ toast('Saqlashda xato'); }
+};
+$('expBtn').onclick = ()=>copyText(JSON.stringify({v:1,settings,orders}));
+$('impBtn').onclick = ()=>{ $('impTxt').classList.toggle('hidden'); $('impGo').classList.toggle('hidden'); };
+$('impGo').onclick = async ()=>{
+  let data; try{ data=JSON.parse($('impTxt').value); }catch(e){ toast("Matn noto'g'ri"); return; }
+  if(!data || !Array.isArray(data.orders)){ toast("Matn noto'g'ri"); return; }
+  if(!(await ask(`${data.orders.length} ta buyurtma tiklanadi (bor buyurtmalar ustiga yoziladi). Davom etasizmi?`))) return;
+  try{
+    if(data.settings){ settings=Object.assign(settings,data.settings); await store.set('settings',JSON.stringify(settings)); }
+    for(const o of data.orders){ if(o && o.id){ await saveOrderObj(o); const i=orders.findIndex(x=>x.id===o.id); if(i>=0) orders[i]=o; else orders.push(o); } }
+    $('impTxt').value=''; toast('Tiklandi'); renderAll();
+  }catch(e){ toast('Tiklashda xato'); }
+};
+
+load();
+</script>
+</body>
+</html>
