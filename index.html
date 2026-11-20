@@ -248,8 +248,20 @@ const STATUS = {
   p2:{t:"Qoldiq kutilmoqda",c:"s-p2"},
   done:{t:"Yakunlangan",c:"s-done"}
 };
-let settings = { books:[{id:'b1',name:'1-kitob',price:0},{id:'b2',name:'2-kitob',price:0},{id:'b3',name:'3-kitob',price:0}], defPct:50,
-  bundles:[{books:['b1','b2'],price:89000},{books:['b1','b2','b3'],price:129000}] };
+const SV = 2; // sozlamalar versiyasi
+let settings = { sv:SV, books:[{id:'b1',name:'1-kitob',price:49000},{id:'b2',name:'2-kitob',price:49000},{id:'b3',name:'3-kitob',price:49000},{id:'b4',name:'4-kitob',price:49000}], defPct:50,
+  bundles:[{books:['b1','b2'],price:89000},{books:['b1','b2','b3'],price:129000},{books:['b1','b2','b3','b4'],price:149000}] };
+// Eski (3 kitobli) sozlamalarni yangilash: 4-kitob va yangi to'plam narxlari
+function migrate(){
+  if((settings.sv||1) >= SV) return false;
+  if(!Array.isArray(settings.books)) settings.books=[];
+  while(settings.books.length<4){ const n=settings.books.length+1; settings.books.push({id:'b'+n+'_'+Date.now().toString(36),name:n+'-kitob',price:49000}); }
+  settings.books.forEach(b=>{ if(!(b.price>0)) b.price=49000; });
+  const id=settings.books.slice(0,4).map(b=>b.id);
+  settings.bundles=[{books:[id[0],id[1]],price:89000},{books:[id[0],id[1],id[2]],price:129000},{books:id,price:149000}];
+  settings.sv=SV;
+  return true;
+}
 let orders = [];
 let filter = 'all', query = '', period = 'all';
 let editing = null;   // tahrirlanayotgan buyurtma
@@ -285,7 +297,8 @@ async function load(){
     const keys = await store.keys();
     const want = keys.filter(k=>k==='settings'||k.startsWith('o_'));
     const vals = await store.getMany(want);
-    if(vals.settings){ try{ settings = Object.assign(settings, JSON.parse(vals.settings)); }catch(e){} }
+    if(vals.settings){ try{ const sv0=JSON.parse(vals.settings); if(!sv0.sv) sv0.sv=1; settings = Object.assign(settings, sv0); }catch(e){} }
+    if(migrate()){ try{ await store.set('settings',JSON.stringify(settings)); }catch(e){} }
     orders = want.filter(k=>k.startsWith('o_')).map(k=>{ try{ return JSON.parse(vals[k]); }catch(e){ return null; } }).filter(Boolean);
   }catch(e){ toast("Ma'lumotni yuklashda xato"); }
   $('storeInfo').textContent = hasCS ? "☁️ Ma'lumotlar Telegram bulutida saqlanmoqda" : "⚠️ Telegramdan tashqarida ochilgan: ma'lumot faqat shu brauzerda saqlanadi";
